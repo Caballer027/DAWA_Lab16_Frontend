@@ -1,10 +1,11 @@
-const BASE_URL = 'http://localhost:3001/api/productos';
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api/productos';
 
 export async function getProductos() {
   const res = await fetch(BASE_URL);
   return res.json();
 }
 
+// ... el resto de tus funciones
 export async function getProducto(id) {
   const res = await fetch(`${BASE_URL}/${id}`);
   return res.json();
