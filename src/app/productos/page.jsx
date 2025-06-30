@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { getProductos, deleteProducto as apiDeleteProducto } from '@/lib/api'; // <--- ¡AÑADIDO! Renombramos deleteProducto para evitar conflicto
 
 export default function ProductosPage() {
   const [productos, setProductos] = useState([]);
@@ -14,11 +15,11 @@ export default function ProductosPage() {
   const fetchProductos = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:3001/api/productos');
-      const data = await res.json();
+      const data = await getProductos(); // <--- ¡MODIFICADO! Usa la función de api.js
       setProductos(data);
     } catch (error) {
       console.error('Error al obtener productos:', error);
+      // Aquí podrías mostrar un mensaje de error más amigable al usuario
     } finally {
       setLoading(false);
     }
@@ -28,19 +29,15 @@ export default function ProductosPage() {
     const confirmacion = confirm(`¿Estás seguro de eliminar "${nombreProducto}"?`);
     if (confirmacion) {
       try {
-        const res = await fetch(`http://localhost:3001/api/productos/${codProducto}`, {
-          method: 'DELETE'
-        });
+        // <--- ¡MODIFICADO! Usa la función de api.js para eliminar
+        await apiDeleteProducto(codProducto); 
 
-        if (res.status === 204) {
-          setProductos(productos.filter(p => p.codProducto !== codProducto));
-        } else {
-          const data = await res.json();
-          alert(`Error al eliminar: ${data.message}`);
-        }
+        // Si la eliminación fue exitosa (la función apiDeleteProducto no lanza error), actualiza el estado
+        setProductos(productos.filter(p => p.codProducto !== codProducto));
+        alert('Producto eliminado exitosamente.'); // O un Toast/notificación
       } catch (error) {
         console.error('Error al eliminar producto:', error);
-        alert('Error al eliminar el producto');
+        alert('Error al eliminar el producto. Consulta la consola para más detalles.');
       }
     }
   };
@@ -87,7 +84,7 @@ export default function ProductosPage() {
 
   useEffect(() => {
     fetchProductos();
-  }, []);
+  }, []); // Se ejecuta una vez al montar el componente para cargar los productos iniciales
 
   if (loading) {
     return (
